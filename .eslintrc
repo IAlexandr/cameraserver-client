@@ -1,0 +1,14 @@
+{
+  "extends": "eslint-config-airbnb",
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "space-before-function-paren": [2, "always"],
+    "comma-dangle": 0,
+    "new-cap": 0,
+    "indent": [2, 2, { "SwitchCase": 1 }],
+    "no-shadow": [2, {"allow": ["err", "result"]}]
+  }
+}
