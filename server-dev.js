@@ -31,10 +31,10 @@ const server = new WebpackDevServer(compiler, {
   }
 });
 
-server.listen(8080, () => {
+server.listen(7777, () => {
   httpServer.listen(4000);
 /* eslint-disable no-console */
-console.log('App server listening on port 8080');
+console.log('App server listening on port 7777');
 console.log('Build app...');
 
 /* eslint-enable no-console */
