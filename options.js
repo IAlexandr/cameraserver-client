@@ -7,7 +7,7 @@ const optionsSpec = {
   },
   CS_API: {
     required: true,
-    default: 'http://localhost:8888/api',
+    default: 'http://cs.geoworks.org/api',
     env: 'CS_API'
   }
 };
