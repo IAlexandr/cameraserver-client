@@ -5,16 +5,15 @@ import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import router from './lib/router';
-// import auth from './lib/auth';
+import routers from './lib/server/routers';
+import options from './options';
 
 const app = express();
 app.use(cors({origin: true}));
-// auth(app);
 
 app.use(bodyParser.json({ limit: '1024mb' }));
 
-app.use(router);
+routers(app);
 
 const httpServer = http.Server(app);
 
@@ -27,14 +26,14 @@ const server = new WebpackDevServer(compiler, {
   hot: true,
   historyApiFallback: true,
   proxy: {
-    '/api/*': 'http://localhost:4000'
+    '/api/*': 'http://localhost:4001'
   }
 });
 
-server.listen(7777, () => {
-  httpServer.listen(4000);
+server.listen(options.PORT, () => {
+  httpServer.listen(4001);
 /* eslint-disable no-console */
-console.log('App server listening on port 7777');
+console.log('App server listening on port', options.PORT);
 console.log('Build app...');
 
 /* eslint-enable no-console */
