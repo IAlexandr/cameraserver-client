@@ -2,7 +2,7 @@ const version = require('./package.json').version;
 const optionsSpec = {
   PORT: {
     required: true,
-    default: '7777',
+    default: '8888',
     env: 'CS_PORT'
   },
   CS_API: {
