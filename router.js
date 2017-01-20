@@ -7,7 +7,6 @@ const connect = require('./lib/server/connect');
 var connections;
 
 const router = new express.Router();
-
 getConnections()
   .then((data) => connect(data))
   .then((props) => {
