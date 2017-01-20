@@ -1,14 +1,15 @@
 const version = require('./package.json').version;
+
 const optionsSpec = {
-  PORT: {
+  DASH_CLIENT_PORT: {
     required: true,
-    default: '8888',
-    env: 'CS_PORT'
+    default: '8000',
+    env: 'DASH_CLIENT_PORT'
   },
-  CS_API: {
+  ETCD: {
     required: true,
-    default: 'http://localhost:8889/api',//'http://cs.geoworks.org/api',
-    env: 'CS_API'
+    default: 'http://10.157.212.14:2379',
+    env: 'ETCD'
   }
 };
 

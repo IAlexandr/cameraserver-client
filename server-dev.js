@@ -5,7 +5,7 @@ import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import routers from './lib/server/routers';
+import router from './router';
 import options from './options';
 
 const app = express();
@@ -13,9 +13,10 @@ app.use(cors({origin: true}));
 
 app.use(bodyParser.json({ limit: '1024mb' }));
 
-routers(app);
-
 const httpServer = http.Server(app);
+
+app.use('/static', express.static('static'));
+app.use('/api', router);
 
 webpackConfig.output.path = '/';
 
@@ -26,15 +27,13 @@ const server = new WebpackDevServer(compiler, {
   hot: true,
   historyApiFallback: true,
   proxy: {
-    '/api/*': 'http://localhost:4001'
+    '/api/*': 'http://localhost:8001'
   }
 });
 
-server.listen(options.PORT, () => {
-  httpServer.listen(4001);
-/* eslint-disable no-console */
-console.log('App server listening on port', options.PORT);
-console.log('Build app...');
+server.listen(options.DASH_CLIENT_PORT, () => {
+  httpServer.listen(8001);
 
-/* eslint-enable no-console */
+  console.log('App server listening on port', options.DASH_CLIENT_PORT);
+  console.log('Build app...');
 });
