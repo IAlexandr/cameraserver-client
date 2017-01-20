@@ -23,7 +23,6 @@ webpackConfig.output.path = '/';
 const compiler = webpack(webpackConfig);
 
 const server = new WebpackDevServer(compiler, {
-  contentBase: './dist',
   hot: true,
   historyApiFallback: true,
   proxy: {
