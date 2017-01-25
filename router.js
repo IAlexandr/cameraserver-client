@@ -1,5 +1,5 @@
 const express = require('express');
-const moment = require('moment');
+// const moment = require('moment');
 const options = require('./options');
 const getConnections = require('./lib/server/getConnections');
 const generateManifest = require('./lib/server/generateManifest');
@@ -26,112 +26,136 @@ router.get('/streams', (req, res) => {
     })
 });
 
+// router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
+//   const cameraId = req.params.cameraId;
+//   const query = req.query;
+//
+//   connections.db.Session.findOne({
+//     where: {
+//       stoppedAt: null,
+//       cameraId
+//     }
+//   })
+//     .then((record) => {
+//       generateManifest(
+//         {
+//           connection: connections.db, sessionGuid: record.sessionGuid, query
+//         },
+//       (err, manifest) => {
+//         if (err) {
+//           return res.sendStatus(500);
+//         }
+//
+//         res.set('Content-Type', 'text/xml');
+//
+//         return res.send(manifest);
+//       });
+//     })
+//     .catch(function (err) {
+//       res.sendStatus(500);
+//     });
+// });
+
 router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
   const cameraId = req.params.cameraId;
   const query = req.query;
 
-  connections.db.Session.findOne({
-    where: {
-      stoppedAt: null,
-      cameraId
-    }
-  })
-    .then((record) => {
-      generateManifest(
-        {
-          connection: connections.db, sessionGuid: record.sessionGuid, query
-        },
-      (err, manifest) => {
-        if (err) {
-          return res.sendStatus(500);
-        }
+  const startDate = new Date(parseInt(query.startDate));
+  const endDate = new Date(parseInt(query.endDate));
 
-        res.set('Content-Type', 'text/xml');
-
-        return res.send(manifest);
-      });
-    })
-    .catch(function (err) {
-      res.sendStatus(500);
-    });
-});
-
-router.get('/archive/:cameraId/manifest.mpd', (req, res) => {
-  const cameraId = req.params.cameraId;
-  const query = req.query;
-
-  const startDate = new Date(parseInt(query.dt));
-  const endDate = moment(startDate);
-  endDate.set('hour', 23);
-  endDate.set('minute', 59);
-  endDate.set('second', 59);
-  endDate.set('millisecond', 0);
-
-  connections.db.Session.findAll({
-    where: {
-      $and: {
-        createdAt: {
-          $gte: startDate
-        },
-        createdAt: {
-          $lte: endDate.utc().format()
-        },
-        cameraId: cameraId
-      }
-    }
-  })
-    .then((records) => {
-      const guids = records.map((item) => {
-        return item.sessionGuid;
-      });
-      connections.db.Segment.findAll({
-        order: '"chunkNumber" ASC',
-        where: {
-          sessionGuid: {
-            $in: guids
+  if (query.startDate && query.endDate) {
+    connections.db.Session.findAll({
+      where: {
+        $and: {
+          createdAt: {
+            $gte: startDate
           },
-          $and: {
-            createdAt: {
-              $gte: startDate
+          createdAt: {
+            $lte: endDate
+          },
+          cameraId: cameraId
+        }
+      }
+    })
+      .then((records) => {
+        console.log(records);
+        const guids = records.map((item) => {
+          return item.sessionGuid;
+        });
+        connections.db.Segment.findAll({
+          order: '"chunkNumber" ASC',
+          where: {
+            sessionGuid: {
+              $in: guids
             },
-            createdAt: {
-              $lte: endDate.utc().format()
+            $and: {
+              createdAt: {
+                $gte: startDate
+              },
+              createdAt: {
+                $lte: endDate
+              }
             }
           }
-        }
-      }).then((segments) => {
-        if (records.length) {
-          res.set('Content-Type', 'text/xml');
-          return res.send(getArchiveMpd(records, segments));
-        } else {
-          return res.sendStatus(404);
-        }
-      }).catch(function (err) {
-        res.sendStatus(500);
+        }).then((segments) => {
+          if (records.length) {
+            res.set('Content-Type', 'text/xml');
+            return res.send(getArchiveMpd(records, segments));
+          } else {
+            return res.sendStatus(404);
+          }
+        }).catch(function (err) {
+          return res.sendStatus(500);
+        });
+      })
+      .catch(function (err) {
+        return res.sendStatus(500);
       });
+  } else {
+    connections.db.Session.findOne({
+      where: {
+        stoppedAt: null,
+        cameraId
+      }
     })
-    .catch(function (err) {
-      res.sendStatus(500);
-    });
+      .then((record) => {
+        generateManifest(
+          {
+            connection: connections.db, sessionGuid: record.sessionGuid, query
+          },
+        (err, manifest) => {
+          if (err) {
+            return res.sendStatus(500);
+          }
+
+          res.set('Content-Type', 'text/xml');
+
+          return res.send(manifest);
+        });
+      })
+      .catch(function (err) {
+        return res.sendStatus(500);
+      });
+  }
 });
 
-router.get('/archive/:cameraId/:key', (req, res) => {
-  const key = req.params.key;
-
-  connections.store.exists({ key }, (err, exist) => {
-    if (err) {
-      return res.status(500);
-    }
-
-    if (!exist) {
-      return res.status(404);
-    }
-
-    const rs = connections.store.createReadStream({ key });
-
-    rs.pipe(res);
-  });
-});
+// router.get('/archive/:cameraId/:key', (req, res) => {
+//   const key = req.params.key;
+//
+//   connections.store.exists({ key }, (err, exist) => {
+//     if (err) {
+//       return res.status(500);
+//     }
+//
+//     if (!exist) {
+//       return res.status(404);
+//     }
+//
+//     const rs = connections.store.createReadStream({ key });
+//
+//     rs.pipe(res);
+//   });
+// });
 
 router.get('/streams/:cameraId/:key', (req, res) => {
   const key = req.params.key;
