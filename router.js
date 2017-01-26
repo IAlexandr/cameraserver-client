@@ -26,36 +26,6 @@ router.get('/streams', (req, res) => {
     })
 });
 
-// router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
-//   const cameraId = req.params.cameraId;
-//   const query = req.query;
-//
-//   connections.db.Session.findOne({
-//     where: {
-//       stoppedAt: null,
-//       cameraId
-//     }
-//   })
-//     .then((record) => {
-//       generateManifest(
-//         {
-//           connection: connections.db, sessionGuid: record.sessionGuid, query
-//         },
-//       (err, manifest) => {
-//         if (err) {
-//           return res.sendStatus(500);
-//         }
-//
-//         res.set('Content-Type', 'text/xml');
-//
-//         return res.send(manifest);
-//       });
-//     })
-//     .catch(function (err) {
-//       res.sendStatus(500);
-//     });
-// });
-
 router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
   const cameraId = req.params.cameraId;
   const query = req.query;
@@ -66,14 +36,32 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
   if (query.startDate && query.endDate) {
     connections.db.Session.findAll({
       where: {
-        $and: {
-          createdAt: {
-            $gte: startDate
+        $or: {
+          $and: {
+            createdAt: {
+              $gte: startDate
+            },
+            createdAt: {
+              $lte: endDate
+            },
+            cameraId: cameraId
           },
-          createdAt: {
-            $lte: endDate
+          $and: {
+            createdAt: {
+              $lte: startDate
+            },
+            stoppedAt: {
+              $gte: startDate
+            },
+            cameraId: cameraId
           },
-          cameraId: cameraId
+          $and: {
+            createdAt: {
+              $lte: startDate
+            },
+            stoppedAt: null,
+            cameraId: cameraId
+          },
         }
       }
     })
@@ -138,24 +126,6 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
       });
   }
 });
-
-// router.get('/archive/:cameraId/:key', (req, res) => {
-//   const key = req.params.key;
-//
-//   connections.store.exists({ key }, (err, exist) => {
-//     if (err) {
-//       return res.status(500);
-//     }
-//
-//     if (!exist) {
-//       return res.status(404);
-//     }
-//
-//     const rs = connections.store.createReadStream({ key });
-//
-//     rs.pipe(res);
-//   });
-// });
 
 router.get('/streams/:cameraId/:key', (req, res) => {
   const key = req.params.key;
