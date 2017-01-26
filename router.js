@@ -66,7 +66,6 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
       }
     })
       .then((records) => {
-        console.log(records);
         const guids = records.map((item) => {
           return item.sessionGuid;
         });
