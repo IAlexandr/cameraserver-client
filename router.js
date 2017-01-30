@@ -34,37 +34,12 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
   const endDate = new Date(parseInt(query.endDate));
 
   if (query.startDate && query.endDate) {
-    connections.db.Session.findAll({
-      where: {
-        $or: {
-          $and: {
-            createdAt: {
-              $gte: startDate
-            },
-            createdAt: {
-              $lte: endDate
-            },
-            cameraId: cameraId
-          },
-          $and: {
-            createdAt: {
-              $lte: startDate
-            },
-            stoppedAt: {
-              $gte: startDate
-            },
-            cameraId: cameraId
-          },
-          $and: {
-            createdAt: {
-              $lte: startDate
-            },
-            stoppedAt: null,
-            cameraId: cameraId
-          },
-        }
-      }
-    })
+    var q0 = `"createdAt" <= '${endDate.toISOString()}' AND "stoppedAt" IS NULL AND "cameraId" = ${cameraId}`;
+    var q1 = `"createdAt" <= '${endDate.toISOString()}' AND "createdAt" >= '${startDate.toISOString()}' AND "cameraId" = ${cameraId}`;
+    var q2 = `"stoppedAt" <= '${endDate.toISOString()}' AND "stoppedAt" >= '${startDate.toISOString()}' AND "cameraId" = ${cameraId}`;
+    var q = `SELECT * FROM sessions WHERE (${q0}) OR (${q1}) OR (${q2})`
+
+    connections.db.query(q, {model:connections.db.Session})
       .then((records) => {
         const guids = records.map((item) => {
           return item.sessionGuid;
@@ -92,10 +67,12 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
             return res.sendStatus(404);
           }
         }).catch(function (err) {
+          console.log(err);
           return res.sendStatus(500);
         });
       })
       .catch(function (err) {
+        console.log(err);
         return res.sendStatus(500);
       });
   } else {
