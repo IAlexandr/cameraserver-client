@@ -72,17 +72,19 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
                 sessionGuid: 'no-video'
               }
             }).then((noVideoSegments) => {
-              if (records.length) {
+              // if (records.length) {
                 res.set('Content-Type', 'text/xml');
                 return res.send(getArchiveMpd({
                   sessions: records,
                   segments,
                   noVideoSession,
-                  noVideoSegments
+                  noVideoSegments,
+                  startDate,
+                  endDate
                 }));
-              } else {
-                return res.sendStatus(404);
-              }
+              // } else {
+              //   return res.sendStatus(404);
+              // }
             });
           });
         }).catch(function (err) {
