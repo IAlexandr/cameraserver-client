@@ -60,12 +60,33 @@ router.get('/streams/:cameraId/manifest.mpd', (req, res) => {
             }
           }
         }).then((segments) => {
-          if (records.length) {
-            res.set('Content-Type', 'text/xml');
-            return res.send(getArchiveMpd(records, segments));
-          } else {
-            return res.sendStatus(404);
-          }
+          // no-video code
+          connections.db.Session.findOne({
+            where: {
+              sessionGuid: 'no-video'
+            }
+          }).then((noVideoSession) => {
+            connections.db.Segment.findAll({
+              order: '"chunkNumber" ASC',
+              where: {
+                sessionGuid: 'no-video'
+              }
+            }).then((noVideoSegments) => {
+              // if (records.length) {
+                res.set('Content-Type', 'text/xml');
+                return res.send(getArchiveMpd({
+                  sessions: records,
+                  segments,
+                  noVideoSession,
+                  noVideoSegments,
+                  startDate,
+                  endDate
+                }));
+              // } else {
+              //   return res.sendStatus(404);
+              // }
+            });
+          });
         }).catch(function (err) {
           console.log(err);
           return res.sendStatus(500);
