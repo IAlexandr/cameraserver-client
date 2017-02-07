@@ -18899,7 +18899,9 @@ function PlaybackController() {
 
     function getTimeToStreamEnd() {
         var startTime = getStreamStartTime(true);
-        var offset = isDynamic ? startTime - streamInfo.start : 0;
+        // const offset = isDynamic ? startTime - streamInfo.start : 0;
+        // Fix for Multiperiod. Its working for me
+        var offset = startTime - streamInfo.start;
         return startTime + (streamInfo.duration - offset) - getTime();
     }
 
