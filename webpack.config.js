@@ -7,8 +7,8 @@ module.exports = {
   entry: {
     app: [
       'webpack/hot/dev-server',
-      './lib/client-index.js',
-],
+      './lib/app.js',
+    ],
 },
 
   output: {
