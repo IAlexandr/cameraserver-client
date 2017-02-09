@@ -13,7 +13,7 @@
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://github.com/IAlexandr/cctv-web-client#readme",
+  "homepage": "https://github.com/geoworks/cctv-web-client#readme",
   "dependencies": {
     "aws-sdk": "^2.7.26",
     "babel-core": "6.9.0",
